@@ -1,8 +1,14 @@
 .claude/
 
 __pycache__/
-*.pyc
+*.py[cod]
 .ipynb_checkpoints/
+.venv/
+venv/
+env/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
 
 *.aux
 *.bbl
@@ -13,4 +19,7 @@ __pycache__/
 *.out
 *.synctex.gz
 
-dataset/submission.csv
+*.bak
+*.tmp
+.DS_Store
+Thumbs.db
