@@ -2,6 +2,8 @@ import json
 from pathlib import Path
 from textwrap import dedent
 
+ROOT = Path(__file__).parent.parent   # project root (scripts/ is one level below)
+
 
 def to_source(text: str):
     text = dedent(text).strip("\n")
@@ -678,5 +680,5 @@ nb = {
     "nbformat_minor": 5,
 }
 
-Path("eda_round1.ipynb").write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
+(ROOT / "eda_round1.ipynb").write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
 print("Wrote eda_round1.ipynb")

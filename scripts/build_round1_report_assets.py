@@ -9,8 +9,9 @@ import numpy as np
 import pandas as pd
 
 
-DATA = Path("dataset")
-OUT = Path("report_assets")
+ROOT = Path(__file__).parent.parent   # project root (scripts/ is one level below)
+DATA = ROOT / "dataset"
+OUT  = ROOT / "report_assets"
 OUT.mkdir(exist_ok=True)
 
 
