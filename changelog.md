@@ -1,79 +1,72 @@
-# Changelog
+# changelog
 
-## Mốc so sánh
+## mốc so sánh
 
-- So với repo gốc: `https://github.com/chaulemuoichin/VIN-Datathon-26---CLE`
-- Mốc so sánh: branch `main`
-- File này chỉ ghi delta của repo nộp bài. Bỏ qua đống tooling local trong `.claude/`.
+- so với repo gốc: `https://github.com/chaulemuoichin/VIN-Datathon-26---CLE`
+- mốc so sánh: branch `main`
+- file này chỉ ghi phần delta của repo nộp bài, bỏ qua tooling local trong `.claude/`
 
-## Delta 2026-04-22
+## delta 2026-04-22
 
-### 1. Dọn lại structure
+### 1. dọn lại structure
 
-- Tách repo theo đúng đồ nộp:
-- `notebooks/`
-- `report/`
-- `deliverables/`
-- `references/`
-- `scripts/`
+- tách lại repo để khớp đúng structure nộp bài:
+  - `notebooks/`
+  - `report/`
+  - `deliverables/`
+  - `references/`
+  - `scripts/`
 
-- Rename mấy file chính:
-- `eda_round1.ipynb` -> `notebooks/part2_analytics.ipynb`
-- `forecasting.ipynb` -> `notebooks/part3_forecasting.ipynb`
-- `mcq_solve.ipynb` -> `notebooks/part1_mcq.ipynb`
-- `submission.csv` -> `deliverables/submission.csv`
-- `report_assets/` -> `report/assets/`
-- `build_round1_eda_notebook.py` -> `scripts/build_part2_analytics_notebook.py`
-- `build_round1_report_assets.py` -> `scripts/build_report_assets.py`
+- rename file để đồng bộ tên gọi theo từng phần nộp:
+  - `eda_round1.ipynb` -> `notebooks/part2_analytics.ipynb`
+  - `forecasting.ipynb` -> `notebooks/part3_forecasting.ipynb`
+  - `mcq_solve.ipynb` -> `notebooks/part1_mcq.ipynb`
+  - `submission.csv` -> `deliverables/submission.csv`
+  - `report_assets/` -> `report/assets/`
+  - `build_round1_eda_notebook.py` -> `scripts/build_part2_analytics_notebook.py`
+  - `build_round1_report_assets.py` -> `scripts/build_report_assets.py`
 
-### 2. EDA -> Full analytics. thêm customer retention
+### 2. nâng eda thành full analytics
 
-- Nguồn chuẩn cho Part 2 là `notebooks/part2_analytics.ipynb`.
-- Script build chuẩn là `scripts/build_part2_analytics_notebook.py`.
-- Notebook này cover đủ các block đang dùng trong report, gồm cả retention/cohort.
+- gộp eda và business analysis để part 2 bớt rời rạc
+- thêm retention analysis để đọc vòng đời khách hàng
+- thêm cohort heatmaps để thấy cohort decay rõ hơn
+- thêm channel-quality analysis để đánh giá chất lượng kênh
+- thêm profit-depth analysis để nhìn lợi nhuận thật theo danh mục
 
-### 3. Report lên bản nộp cuối
+### 3. nâng report lên bản nộp cuối
 
-- Thay metadata thật của team:
-- team `claude and em`
-- email `tamhuyle.lht@gmail.com`
+- thay metadata team để khớp thông tin nộp bài thật
+- thêm figure còn thiếu để đủ ý cho phần retention và channel economics
+- sửa layout report để figure, table, caption và reference gọn hơn
+- sync pdf cuối để deliverables bám đúng bản compile mới nhất
 
-- Thêm figure còn thiếu:
-- `cohort_retention.png`
-- `margin_channel.png`
+### 4. gọn lại asset report
 
-- Sửa bố cục report để figure/table đứng đúng chỗ, caption/ref sạch hơn.
-- Sync `deliverables/round1_report.pdf` từ bản compile trong `report/`.
+- gom asset về `report/assets/` để build flow gọn hơn
+- giữ lại asset đang dùng để repo đỡ rác
+- xoá asset chết để tránh lệch notebook với report
+- cập nhật `summary_metrics.json` để khớp số liệu giữa notebook và report
 
-### 4. Asset report gọn lại
+### 5. sync lại docs
 
-- `scripts/build_report_assets.py` chỉ build vào `report/assets/`.
-- Giữ lại asset đang dùng.
-- Bỏ asset chết:
-- `action_backlog.png`
-- `traffic_vs_orders.png`
+- viết lại `README.md` để khớp structure repo mới
+- sync `references/đề.md` để bám sát file đề gốc
+- thêm `requirements.txt` để setup môi trường rõ hơn
 
-- `summary_metrics.json` có thêm metric để khớp notebook + report.
+### 6. bổ sung artifact nộp bài
 
-### 5. Docs sync lại cho đúng repo hiện tại
+- chốt đủ file nộp để repo sẵn sàng submit:
+  - `deliverables/round1_report.pdf`
+  - `deliverables/submission.csv`
+  - `deliverables/mcq_answers.md`
 
-- Viết lại `README.md` theo structure mới.
-- Sync `references/đề.md` theo `references/đề_og_btc.pdf`.
-- Thêm `requirements.txt`.
+- thêm reference và schema để hỗ trợ trace logic và dữ liệu:
+  - `references/đề.md`
+  - `references/đề_og_btc.pdf`
+  - `references/schemas/ddl_simple.sql`
+  - `references/schemas/ERD_simple.png`
 
-### 6. Bổ sung artifact nộp bài
-
-- Có đủ:
-- `deliverables/round1_report.pdf`
-- `deliverables/submission.csv`
-- `deliverables/mcq_answers.md`
-
-- Có thêm reference/schema:
-- `references/đề.md`
-- `references/đề_og_btc.pdf`
-- `references/schemas/ddl_simple.sql`
-- `references/schemas/ERD_simple.png`
-
-- Có thêm notebook phụ:
-- `notebooks/part1_data_validation.ipynb`
-- `notebooks/part3_baseline.ipynb`
+- thêm notebook phụ để hỗ trợ validation và baseline:
+  - `notebooks/part1_data_validation.ipynb`
+  - `notebooks/part3_baseline.ipynb`
