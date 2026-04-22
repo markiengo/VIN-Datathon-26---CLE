@@ -1,63 +1,63 @@
 # VinUniversity Datathon 2026 - Round 1
 
-Repo nay chua toan bo bai lam vong 1, gom:
+Repo này chứa toàn bộ bài làm cho vòng 1, gồm:
 
-- `Phan 1`: notebook giai MCQ
-- `Phan 2`: notebook EDA va cac hinh dung cho bao cao
-- `Phan 3`: notebook forecasting va file `submission.csv`
-- bao cao LaTeX/PDF de review hoac nop
+- `Phần 1`: notebook giải câu hỏi trắc nghiệm
+- `Phần 2`: notebook EDA và các hình dùng trong báo cáo
+- `Phần 3`: notebook forecasting và file `submission.csv`
+- báo cáo LaTeX/PDF để review hoặc nộp
 
-## Review Nhanh
+## Nên Xem Gì Trước
 
-Neu team chi co `10-15` phut de review, nen di theo thu tu nay:
+Nếu chỉ có `10-15` phút để review, nên đi theo thứ tự này:
 
-1. Doc [round1_report.pdf](./round1_report.pdf) de nam buc tranh tong the.
-2. Mo [round1_report.tex](./round1_report.tex) neu muon gop y truc tiep vao noi dung.
-3. Xem [eda_round1.ipynb](./eda_round1.ipynb) cho `Phan 2`.
-4. Xem [forecasting.ipynb](./forecasting.ipynb) cho `Phan 3`.
-5. Kiem tra [submission.csv](./submission.csv) la file nop cuoi cho forecasting.
+1. Đọc [round1_report.pdf](./round1_report.pdf) để nắm bức tranh tổng thể.
+2. Mở [round1_report.tex](./round1_report.tex) nếu muốn góp ý trực tiếp vào nội dung báo cáo.
+3. Xem [eda_round1.ipynb](./eda_round1.ipynb) cho phần phân tích kinh doanh.
+4. Xem [forecasting.ipynb](./forecasting.ipynb) cho phần mô hình dự báo.
+5. Kiểm tra [submission.csv](./submission.csv) là file nộp cuối cho bài forecasting.
 
-## Cau Truc Repo
+## Cấu Trúc Repo
 
 ```text
 .
-├── dataset/                       # du lieu goc do de bai cung cap
-├── report_assets/                 # hinh va metrics dung cho report
-├── eda_round1.ipynb               # notebook Part 2 de review
-├── forecasting.ipynb              # notebook Part 3 de review
-├── mcq_solve.ipynb                # notebook Part 1
-├── submission.csv                 # file submit cuoi cho forecasting
-├── round1_report.tex              # source bao cao chinh
-├── round1_report.pdf              # ban PDF de doc nhanh
-├── round1_refs.bib                # tai lieu tham khao
-├── build_round1_eda_notebook.py   # script sinh notebook EDA
-└── build_round1_report_assets.py  # script sinh hinh cho report
+├── dataset/                       # Dữ liệu gốc do đề bài cung cấp
+├── report_assets/                 # Hình và metrics dùng cho báo cáo
+├── eda_round1.ipynb               # Notebook Part 2 để review
+├── forecasting.ipynb              # Notebook Part 3 để review
+├── mcq_solve.ipynb                # Notebook Part 1
+├── submission.csv                 # File submit cuối cho forecasting
+├── round1_report.tex              # Source báo cáo chính
+├── round1_report.pdf              # Bản PDF để đọc nhanh
+├── round1_refs.bib                # Tài liệu tham khảo
+├── build_round1_eda_notebook.py   # Script sinh notebook EDA
+└── build_round1_report_assets.py  # Script sinh hình cho report
 ```
 
-## File Quan Trong
+## Các File Quan Trọng
 
-- [round1_report.pdf](./round1_report.pdf): ban doc nhanh, phu hop de team review noi dung.
-- [round1_report.tex](./round1_report.tex): ban nguon chinh cua bao cao.
-- [eda_round1.ipynb](./eda_round1.ipynb): ban EDA da Viet hoa de dong bo voi report.
-- [forecasting.ipynb](./forecasting.ipynb): pipeline forecast cuoi cung, da co validation va save `submission.csv`.
-- [submission.csv](./submission.csv): output nop cuoi.
+- [round1_report.pdf](./round1_report.pdf): bản review nhanh, phù hợp để góp ý tổng thể.
+- [round1_report.tex](./round1_report.tex): nguồn chính của báo cáo.
+- [eda_round1.ipynb](./eda_round1.ipynb): notebook EDA đã Việt hóa để đồng bộ với report.
+- [forecasting.ipynb](./forecasting.ipynb): pipeline forecast cuối cùng, đã có validation và lưu `submission.csv`.
+- [submission.csv](./submission.csv): output nộp cuối.
 
-## Tai Lap Ket Qua
+## Cách Tái Lập
 
-### 1. Sinh lai notebook EDA
+### 1. Sinh lại notebook EDA
 
 ```powershell
 python build_round1_eda_notebook.py
 ```
 
-### 2. Sinh lai hinh cho report
+### 2. Sinh lại hình cho report
 
 ```powershell
 $env:PYTHONIOENCODING='utf-8'
 python build_round1_report_assets.py
 ```
 
-### 3. Compile lai bao cao PDF
+### 3. Compile lại báo cáo PDF
 
 ```powershell
 xelatex -interaction=nonstopmode -halt-on-error round1_report.tex
@@ -66,17 +66,17 @@ xelatex -interaction=nonstopmode -halt-on-error round1_report.tex
 xelatex -interaction=nonstopmode -halt-on-error round1_report.tex
 ```
 
-## Ghi Chu Cho Reviewer
+## Ghi Chú Cho Reviewer
 
-- `round1_report.tex` va `round1_report.pdf` la nguon report chinh.
-- `report_assets/` duoc commit de mo report la thay dung figure hien tai, khong can build lai ngay.
-- `.gitignore` da loai cac file build LaTeX, cache notebook va thu muc cau hinh cuc bo.
-- `dataset/submission.csv` duoc bo khoi repo review de tranh nham voi [submission.csv](./submission.csv) o root.
+- `round1_report.tex` và `round1_report.pdf` là nguồn report chính.
+- `report_assets/` được commit để mở report là thấy đúng figure hiện tại, không cần build lại ngay.
+- `.gitignore` đã loại các file build LaTeX, cache notebook và thư mục cấu hình cục bộ.
+- `dataset/submission.csv` đã được bỏ khỏi repo review để tránh nhầm với [submission.csv](./submission.csv) ở root.
 
-## Deliverables Hien Co
+## Deliverables Hiện Có
 
-- MCQ notebook
-- EDA notebook tieng Viet
-- Forecasting notebook
-- File submit cuoi
-- Bao cao PDF + LaTeX + BibTeX
+- notebook MCQ
+- notebook EDA tiếng Việt
+- notebook forecasting
+- file submit cuối
+- báo cáo PDF + LaTeX + BibTeX
