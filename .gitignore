@@ -1,0 +1,16 @@
+.claude/
+
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+
+dataset/submission.csv

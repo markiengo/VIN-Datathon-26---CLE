@@ -1,0 +1,176 @@
+% Ban hien tai dung XeLaTeX de ho tro tieng Viet on dinh.
+% Neu ban co template NeurIPS chinh thuc, chi can thay dong documentclass
+% va giu nguyen noi dung chinh ben duoi.
+\documentclass[10pt,twocolumn]{article}
+\usepackage[margin=0.72in]{geometry}
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setmonofont{Consolas}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage[numbers]{natbib}
+\usepackage{hyperref}
+\usepackage{siunitx}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\setlength{\columnsep}{0.24in}
+\setlist[itemize]{leftmargin=*, topsep=2pt, itemsep=1pt}
+\setlist[enumerate]{leftmargin=*, topsep=2pt, itemsep=1pt}
+\sisetup{group-separator={,}}
+
+\title{\textbf{Báo Cáo Vòng 1: Phân Tích Kinh Doanh Và Dự Báo Doanh Thu Cho Doanh Nghiệp Thời Trang E-commerce}}
+\author{
+  Tên Nhóm Placeholder \\
+  VinUniversity Datathon 2026 Vòng 1 \\
+  \texttt{team@email.com} \\
+  \href{https://github.com/your-team/your-repo}{Link GitHub Placeholder}
+}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Chúng tôi phân tích một doanh nghiệp thời trang thương mại điện tử tại Việt Nam trong giai đoạn 2012--2022 với hai mục tiêu liên kết chặt chẽ: rút ra các phát hiện kinh doanh có thể hành động ngay và dự báo doanh thu cho 18 tháng tiếp theo. Kết quả cho thấy doanh thu đã bước vào một trạng thái mới sau năm 2018, với mức doanh thu ngày trung bình giảm \SI{40.6}{\percent}, nhưng tính mùa vụ vẫn rất rõ: doanh thu ngày trung bình của tháng 4 gần bằng \num{2.9}$\times$ tháng 12. Doanh thu gắn với số đơn hàng và hiệu quả chuyển đổi mạnh hơn nhiều so với lưu lượng truy cập thô, với $\mathrm{corr}(\text{Revenue}, \text{Orders})=0.9377$ so với $\mathrm{corr}(\text{Revenue}, \text{Sessions})=0.3211$. Phân tích khuyến mãi cho thấy chương trình giảm theo tỷ lệ phần trăm vẫn giữ được hiệu quả, trong khi khuyến mãi giảm số tiền cố định phá hủy lợi nhuận với lợi nhuận gộp xấp xỉ \num{-230.5}M VND. Ở góc độ vận hành, COD có tỷ lệ huỷ đơn \SI{16.0}{\percent}, gần gấp đôi mức của thẻ tín dụng (\SI{7.98}{\percent}), và Streetwear đóng góp khoảng \SI{79.9}{\percent} doanh thu đồng thời chiếm \SI{79.6}{\percent} tổng hoàn tiền. Với bài toán dự báo, chúng tôi xây dựng một mô hình tổ hợp giữa LightGBM và Prophet có kiểm soát leakage, backtest đúng horizon triển khai 548 ngày, và giải thích mô hình bằng SHAP. Toàn bộ gói bài làm kết hợp đủ bốn cấp độ phân tích: mô tả, chẩn đoán, dự báo và khuyến nghị hành động.
+\end{abstract}
+
+\section{Giới thiệu}
+Mục tiêu của doanh nghiệp không chỉ là tăng doanh thu, mà còn phải làm điều đó trong khi kiểm soát trả hàng, xói mòn biên lợi nhuận và phân bổ tồn kho kém hiệu quả. Vì vậy, bài nộp vòng 1 của chúng tôi được chia thành hai phần bổ trợ nhau:
+\begin{itemize}
+  \item \textbf{Phần 2:} phân tích kinh doanh kèm khuyến nghị có thể triển khai ngay.
+  \item \textbf{Phần 3:} pipeline dự báo có thể tái lập cho \texttt{Revenue} và \texttt{COGS}.
+\end{itemize}
+Chúng tôi chủ động ưu tiên những phát hiện có thể chuyển hoá thành quyết định vận hành trong trưng bày hàng hóa, thanh toán, thiết kế khuyến mãi và lập kế hoạch tồn kho.
+
+\section{Phạm vi dữ liệu và phương pháp}
+Chúng tôi kết hợp bảng phân tích lõi \texttt{sales.csv} với các bảng giao dịch, danh mục và vận hành: \texttt{orders}, \texttt{order\_items}, \texttt{products}, \texttt{promotions}, \texttt{returns}, \texttt{inventory}, \texttt{geography} và \texttt{web\_traffic}. Toàn bộ biến đặc trưng chỉ được tạo từ các file được cung cấp, đáp ứng ràng buộc không dùng dữ liệu ngoài.
+
+Ở phần EDA, chúng tôi tổng hợp dữ liệu theo cấp ngày, đơn hàng, dòng sản phẩm và danh mục để trả lời bốn câu hỏi:
+\begin{enumerate}
+  \item Nhu cầu đã thay đổi thế nào theo thời gian?
+  \item Những đòn bẩy thương mại nào thật sự đi cùng doanh thu?
+  \item Biên lợi nhuận và hoàn tiền đang thất thoát tập trung ở đâu?
+  \item Những can thiệp nào nên được ưu tiên trước?
+\end{enumerate}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{report_assets/demand_baseline.png}
+  \caption{Nền cầu cơ bản. Trái: doanh thu ngày trung bình theo năm cho thấy bước ngoặt cấu trúc rõ rệt sau 2018. Giữa: mùa vụ theo tháng vẫn rất mạnh trong giai đoạn sau 2019. Phải: hiệu ứng theo ngày trong tuần có tồn tại nhưng yếu hơn mùa vụ theo tháng.}
+  \label{fig:demand}
+\end{figure*}
+
+\section{Phần 2: Phân tích kinh doanh}
+\subsection{Nhu cầu đã bước vào trạng thái mới sau 2018, nhưng tính mùa vụ vẫn rất mạnh}
+Doanh thu ngày trung bình giảm từ khoảng \num{5.07}M VND trước năm 2019 xuống \num{3.01}M VND từ năm 2019 trở đi, tương đương giảm \SI{40.6}{\percent}. Điều này cho thấy dữ liệu lịch sử trước 2019 không nên được xem là cùng một trạng thái với giai đoạn hiện tại khi lập kế hoạch hoặc dự báo. Tuy vậy, tính mùa vụ vẫn có cấu trúc rất rõ: tháng 4 là tháng mạnh nhất và gần bằng \num{2.9}$\times$ tháng 12. Nhu cầu giữa tuần cũng cao hơn thứ Bảy khoảng \SI{19}{\percent}. Hàm ý chính là việc lập kế hoạch phải vừa nhận biết mặt bằng mới của doanh nghiệp, vừa nhận biết mùa vụ: tồn kho, ngân sách chiến dịch và năng lực giao vận nên dồn vào cụm March--June thay vì phân bổ đều quanh năm.
+
+\subsection{Số đơn và tỷ lệ chuyển đổi quan trọng hơn lưu lượng truy cập thô}
+Doanh thu ngày gắn với số đơn hàng mạnh hơn rất nhiều so với lưu lượng truy cập đầu phễu. Chúng tôi đo được $\mathrm{corr}(\text{Revenue}, \text{Orders})=0.9377$, $\mathrm{corr}(\text{Revenue}, \text{Conversion Proxy})=0.6259$, trong khi $\mathrm{corr}(\text{Revenue}, \text{Sessions})=0.3211$. Điều này gợi ý rằng doanh nghiệp sẽ được lợi nhiều hơn nếu tối ưu tỷ lệ chuyển đổi và chất lượng trưng bày hàng hóa, thay vì chỉ mua thêm lượt truy cập không phân biệt. Ở góc độ bảng theo dõi, nên theo dõi đồng thời orders, conversion và AOV thay vì chỉ tập trung vào sessions.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{report_assets/promo_economics.png}
+  \caption{Kinh tế học khuyến mãi. Khuyến mãi tạo ra doanh thu đáng kể, nhưng không phải loại nào cũng tốt cho biên lợi nhuận.}
+  \label{fig:promo}
+\end{figure}
+
+\subsection{Khuyến mãi có tạo doanh thu, nhưng giảm số tiền cố định đang phá biên lợi nhuận}
+Khuyến mãi là một phần lớn của động cơ thương mại, nhưng hồ sơ lợi nhuận khác nhau rất mạnh theo từng cơ chế. Khuyến mãi dạng percentage vẫn giữ biên lợi nhuận gộp dương khoảng \SI{5.98}{\percent}, trong khi khuyến mãi dạng fixed tạo khoảng \num{376.5}M VND doanh thu nhưng phá huỷ khoảng \num{230.5}M VND lợi nhuận gộp, tương đương biên lợi nhuận gộp \SI{-61.2}{\percent}. Bài học rút ra không phải là xoá toàn bộ khuyến mãi, mà là phải thiết kế lại cơ cấu khuyến mãi. Hành động khẩn cấp nhất là rà soát hoặc đặt ngưỡng cho nhóm khuyến mãi giảm tiền cố định trước khi cắt rộng toàn bộ chương trình giảm giá.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth]{report_assets/returns_cancellations.png}
+  \caption{Ma sát thương mại. COD là phương thức thanh toán rủi ro nhất về huỷ đơn, còn wrong\_size là lý do trả hàng chiếm ưu thế.}
+  \label{fig:friction}
+\end{figure}
+
+\subsection{COD và wrong-size là hai điểm rò rỉ doanh thu lớn nhất}
+Ma sát thương mại xuất hiện sau khi nhu cầu đã được tạo ra. COD có tỷ lệ huỷ đơn cao nhất ở mức \SI{16.0}{\percent}, so với \SI{7.98}{\percent} của thẻ tín dụng. Nếu kéo COD về mức huỷ đơn tương đương credit card, doanh nghiệp có thể bảo toàn khoảng \num{197.5}M VND doanh thu. Ở phía trả hàng, \texttt{wrong\_size} chiếm khoảng \SI{35}{\percent} số dòng trả hàng, biến sizing và truyền đạt độ vừa vặn thành ưu tiên vận hành hàng đầu.
+
+Mức độ tập trung theo danh mục khiến vấn đề này còn quan trọng hơn: Streetwear đóng góp \SI{79.9}{\percent} doanh thu và \SI{79.6}{\percent} giá trị hoàn tiền. Chỉ cần giảm \SI{10}{\percent} hoàn tiền do sai size ở Streetwear đã có thể tiết kiệm khoảng \num{14.0}M VND. Điều này biến Streetwear thành mục tiêu đòn bẩy cao nhất cho hướng dẫn chọn size, gợi ý độ vừa vặn và QA ở phần mô tả sản phẩm.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=\textwidth]{report_assets/category_portfolio.png}
+  \caption{Bản đồ danh mục sản phẩm. Kích thước bong bóng phản ánh tỷ trọng doanh thu, màu phản ánh số ngày đủ hàng. Streetwear chi phối cả giá trị tạo ra lẫn rủi ro vận hành.}
+  \label{fig:portfolio}
+\end{figure*}
+
+\subsection{Bất cân xứng tồn kho là bài toán phân bổ, không chỉ là thiếu hàng}
+Streetwear vừa là động cơ doanh thu lớn nhất, vừa là cụm tập trung hoàn tiền lớn nhất. Đồng thời, danh mục này còn cho thấy áp lực tồn kho rất cao: \texttt{stockout\_flag} trung bình ở mức \SI{67.3}{\percent}, \texttt{overstock\_flag} ở mức \SI{74.9}{\percent}, và \texttt{days\_of\_supply} khoảng 887 ngày. Outdoor còn cực đoan hơn về số ngày đủ hàng, khoảng 1068.8 ngày. Việc stockout và overstock cùng xuất hiện cho thấy bài toán không nằm ở tổng tồn kho nói chung, mà nằm ở phân bổ sai giữa các danh mục, cơ cấu SKU và các mùa bán.
+
+\subsection{Các hành động ưu tiên}
+\begin{table}[t]
+  \centering
+  \caption{Danh sách hành động ưu tiên, sắp theo giá trị kinh tế ước tính.}
+  \label{tab:actions}
+  \small
+  \begin{tabular}{p{0.43\columnwidth} p{0.18\columnwidth} p{0.24\columnwidth}}
+    \toprule
+    Hành động & Giá trị & KPI \\
+    \midrule
+    Thiết kế lại hoặc dừng khuyến mãi giảm tiền cố định & 230.5M & Lợi nhuận gộp theo khuyến mãi \\
+    Kéo tỷ lệ huỷ COD về gần mức thẻ & 197.5M & Tỷ lệ huỷ COD \\
+    Giảm 10\% hoàn tiền do sai size của Streetwear & 14.0M & Giá trị hoàn tiền do sai size \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Kết luận theo hướng khuyến nghị hành động khá rõ ràng:
+\begin{enumerate}
+  \item \textbf{Thiết kế lại nhóm khuyến mãi giảm tiền cố định trước}, vì đây là nơi lợi nhuận gộp bị phá huỷ rõ nhất.
+  \item \textbf{Giảm rủi ro COD}, đặc biệt ở các nhóm khách hàng hoặc khu vực có thể khuyến khích trả trước.
+  \item \textbf{Ưu tiên fit và phân bổ tồn kho cho Streetwear}, vì đây là nơi tập trung cả quy mô lẫn nỗi đau vận hành.
+\end{enumerate}
+
+\section{Phần 3: Pipeline dự báo}
+Với bài toán dự báo, chúng tôi dự báo \texttt{Revenue} và \texttt{COGS} cho giai đoạn 2023-01-01 đến 2024-07-01 chỉ bằng dữ liệu được cung cấp. Kiến trúc mô hình kết hợp LightGBM~\citep{ke2017lightgbm} với Prophet~\citep{taylor2018forecasting}. Biến đầu vào bao gồm tín hiệu lịch, mã hóa chu kỳ, hồ sơ mùa vụ và cờ sự kiện như Tết hoặc các đợt sale lớn.
+
+\subsection{Kiểm soát leakage và thiết kế validation}
+Chúng tôi bám sát các ràng buộc của đề bài:
+\begin{itemize}
+  \item \textbf{Không leakage từ test:} không dùng Revenue hoặc COGS tương lai làm input.
+  \item \textbf{Không dùng dữ liệu ngoài:} toàn bộ sự kiện và biến đầu vào đều được tạo từ bộ dữ liệu được cấp.
+  \item \textbf{Tái lập được:} random seed được cố định và notebook chứa đầy đủ pipeline.
+\end{itemize}
+
+Quyết định kỹ thuật quan trọng nhất là giao thức validation. Chúng tôi dùng \texttt{TimeSeriesSplit(n\_splits=2, test\_size=548)} để horizon validation khớp với horizon triển khai thực tế. Hồ sơ mùa vụ được dựng lại trong từng fold, và các dòng train dùng leave-one-year-out seasonal encoding để tránh target-encoding leakage. Thiết kế này bảo thủ hơn setup CV 365 ngày trước đây, nhưng phản ánh thực tế leaderboard tốt hơn.
+
+\subsection{Kết quả và khả năng giải thích}
+\begin{table}[t]
+  \centering
+  \caption{Kết quả cross-validation dưới backtest 548 ngày trung thực hơn với bối cảnh triển khai.}
+  \label{tab:forecast}
+  \small
+  \begin{tabular}{lccc}
+    \toprule
+    Mục tiêu & R$^2$ & MAE & MAPE \\
+    \midrule
+    Revenue & 0.5685 & \num{791702} & 33.5\% \\
+    COGS & 0.6023 & \num{686117} & 38.1\% \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Mô hình tổ hợp cuối cùng dùng trọng số đã re-tune dưới setup CV trung thực này: \texttt{0.75 LightGBM + 0.25 Prophet} cho Revenue, và \texttt{0.90 LightGBM + 0.10 Prophet} cho COGS. Khả năng giải thích của mô hình được xử lý bằng SHAP~\citep{lundberg2017unified}, qua đó xác nhận các biến mùa vụ và sự kiện thật sự là động lực kinh doanh thay vì chỉ là nhiễu kỹ thuật. Điều này quan trọng cả cho báo cáo lẫn cho việc rà lỗi rủi ro ngoại suy hoặc leakage.
+
+\section{Kết luận và giới hạn}
+Bài nộp này kết hợp phân tích kinh doanh mang tính hành động với một quy trình dự báo được thiết kế cẩn thận. Phần EDA vượt qua mức mô tả bề mặt và xác định ba đòn bẩy cụ thể: thiết kế lại khuyến mãi giảm tiền cố định, giảm thất thoát liên quan đến COD, và ưu tiên sizing cùng phân bổ tồn kho cho Streetwear. Phần dự báo có thể tái lập, kiểm soát leakage tốt và có khả năng giải thích, đáp ứng kỳ vọng kỹ thuật của vòng 1.
+
+Dù vậy, bài làm vẫn có giới hạn. Thứ nhất, không có tín hiệu ngoại sinh thật sự cho giai đoạn 2023--2024, nên phần dự báo vẫn bị ràng buộc bởi mẫu hình lịch sử. Thứ hai, một số phát hiện EDA mang tính tương quan nhiều hơn là nhân quả. Thứ ba, tồn kho chỉ được quan sát dưới dạng snapshot cuối tháng, nên khả năng tái dựng động học phân bổ tồn kho hàng ngày còn hạn chế.
+
+\bibliographystyle{plainnat}
+\bibliography{round1_refs}
+
+\end{document}
