@@ -1,8 +1,19 @@
+import argparse
 import json
 from pathlib import Path
 from textwrap import dedent
+from uuid import uuid4
 
-ROOT = Path(__file__).parent.parent   # project root (scripts/ is one level below)
+ROOT = Path(__file__).resolve().parent.parent
+OUT = ROOT / "notebooks" / "part2_analytics.ipynb"
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--overwrite", action="store_true", help="Overwrite existing notebook")
+args, _ = parser.parse_known_args()
+
+if OUT.exists() and not args.overwrite:
+    print(f"ABORT: {OUT} already exists. Pass --overwrite to replace it.")
+    raise SystemExit(1)
 
 
 def to_source(text: str):
@@ -15,6 +26,7 @@ def to_source(text: str):
 def md_cell(text: str):
     return {
         "cell_type": "markdown",
+        "id": uuid4().hex[:8],
         "metadata": {},
         "source": to_source(text),
     }
@@ -24,6 +36,7 @@ def code_cell(text: str):
     return {
         "cell_type": "code",
         "execution_count": None,
+        "id": uuid4().hex[:8],
         "metadata": {},
         "outputs": [],
         "source": to_source(text),
@@ -33,9 +46,12 @@ def code_cell(text: str):
 cells = [
     md_cell(
         """
-        # Phần 2 — Notebook EDA Vòng 1
+        # Phần 2 — Notebook Analytics Vòng 1
 
-        Notebook này được thiết kế để kéo điểm **Phần 2 — Trực quan hoá & Phân tích Dữ liệu** theo đúng rubric vòng 1:
+        Notebook này là bản **analytics / business analysis** chuẩn cho Part 2.
+        Report chỉ lấy một phần trong các section bên dưới, nhưng mọi insight Part 2 giữ lại trong report đều phải có nguồn ở notebook này.
+
+        Notebook được thiết kế để kéo điểm **Phần 2 — Trực quan hoá & Phân tích Dữ liệu** theo đúng rubric vòng 1:
 
         - **Mô tả**: mô tả đúng mẫu hình và quy mô ảnh hưởng
         - **Chẩn đoán**: giải thích nguyên nhân khả dĩ
@@ -48,6 +64,8 @@ cells = [
         2. Doanh thu đi cùng **số đơn** và **chuyển đổi** nhiều hơn lưu lượng truy cập thô
         3. Khuyến mãi có tác dụng, nhưng một số cơ chế đang phá biên lợi nhuận
         4. COD, wrong-size và phân bổ tồn kho là các điểm rò rỉ hiệu quả lớn nhất
+        5. Tập khách quay lại vẫn lớn, nhưng cohort mới giữ chân yếu hơn rõ rệt
+        6. Margin theo danh mục và chất lượng kênh giúp chốt ưu tiên ngân sách cuối cùng
         """
     ),
     code_cell(
@@ -74,7 +92,14 @@ cells = [
             }
         )
 
-        DATA = Path("dataset")
+        def find_repo_root(start: Path) -> Path:
+            for candidate in [start, *start.parents]:
+                if (candidate / "dataset").exists() and (candidate / "report").exists():
+                    return candidate
+            raise FileNotFoundError("Không tìm thấy repo root chứa dataset/ và report/.")
+
+        ROOT = find_repo_root(Path.cwd())
+        DATA = ROOT / "dataset"
 
         sales = pd.read_csv(DATA / "sales.csv", parse_dates=["Date"])
         orders = pd.read_csv(DATA / "orders.csv", parse_dates=["order_date"])
@@ -120,6 +145,7 @@ cells = [
         - Doanh thu bám theo **số đơn** và **chuyển đổi** mạnh hơn hẳn so với lưu lượng truy cập thô, nên bài toán không chỉ là "đổ thêm lượt truy cập".
         - Khuyến mãi kiểu `percentage` vẫn dùng được, nhưng khuyến mãi kiểu `fixed` đang tạo doanh thu với **lợi nhuận gộp âm**.
         - Streetwear là động cơ doanh thu lớn nhất, nhưng cũng là điểm tập trung của hoàn tiền, trả hàng và lệch pha tồn kho.
+        - Tỷ lệ mua lại vẫn cao, nhưng retention của cohort mới yếu dần theo thời gian và cần chiến dịch re-engagement đúng lúc.
         """
     ),
     code_cell(
@@ -376,7 +402,7 @@ cells = [
         """
         ## 2. Lượt truy cập không phải toàn bộ câu chuyện: số đơn và chuyển đổi mới là đòn bẩy gần doanh thu hơn
 
-        Phần này nhằm tránh một bẫy phổ biến trong EDA thương mại điện tử: nhìn thấy lượt truy cập tăng rồi mặc định doanh thu sẽ tăng tương ứng.
+        Phần này nhằm tránh một bẫy phổ biến trong phân tích thương mại điện tử: nhìn thấy lượt truy cập tăng rồi mặc định doanh thu sẽ tăng tương ứng.
         """
     ),
     code_cell(
@@ -622,7 +648,102 @@ cells = [
     ),
     md_cell(
         """
-        ## 6. Lớp khuyến nghị: danh sách hành động đã được lượng hóa
+        ## 6. Retention khách hàng: ai quay lại, khi nào, và xu hướng đang xấu đi hay tốt lên?
+
+        Tỷ trọng đơn hàng mới vs. quay lại theo năm + heatmap cohort retention theo offset tháng (M+1, M+3, M+6, M+12).
+
+        Câu hỏi ở đây không chỉ là "khách có quay lại không", mà còn là cohort mới có giữ chân tệ hơn cohort cũ hay không.
+        """
+    ),
+    code_cell(
+        """
+        import seaborn as sns
+
+        first_order = orders.groupby("customer_id")["order_date"].min().rename("first_order_date")
+        oc = orders.merge(first_order, on="customer_id")
+        oc["months_offset"] = (
+            (oc["order_date"].dt.year - oc["first_order_date"].dt.year) * 12
+            + oc["order_date"].dt.month - oc["first_order_date"].dt.month
+        )
+        oc["year"] = oc["order_date"].dt.year
+        oc["cohort_year"] = oc["first_order_date"].dt.year
+
+        annual_split = oc.groupby(["year", oc["months_offset"].eq(0)])["order_id"].count().unstack(fill_value=0)
+        annual_split.columns = ["repeat", "new"]
+        annual_split["total"] = annual_split["repeat"] + annual_split["new"]
+        annual_split["new_pct"] = annual_split["new"] / annual_split["total"] * 100
+        annual_split["repeat_pct"] = annual_split["repeat"] / annual_split["total"] * 100
+
+        cohort_size = oc[oc["months_offset"] == 0].groupby("cohort_year")["customer_id"].nunique()
+        offsets = [1, 3, 6, 12]
+        ret = {}
+        for m in offsets:
+            active = oc[oc["months_offset"] == m].groupby("cohort_year")["customer_id"].nunique()
+            ret[f"M+{m}"] = (active / cohort_size * 100).round(1)
+        ret_df = pd.DataFrame(ret).loc[2013:2021].fillna(0)
+
+        last_order = orders.groupby("customer_id")["order_date"].max()
+        max_order_date = orders["order_date"].max()
+        days_silent = (max_order_date - last_order).dt.days
+        lapsed_60_90 = days_silent.between(60, 90, inclusive="both").sum()
+
+        fig, axes = plt.subplots(1, 2, figsize=(16, 5))
+
+        years = annual_split.index.astype(str)
+        axes[0].bar(years, annual_split["repeat_pct"], label="Quay lại", color="#2a9d8f")
+        axes[0].bar(years, annual_split["new_pct"], bottom=annual_split["repeat_pct"], label="Mới", color="#e9c46a")
+        for i, (r, n) in enumerate(zip(annual_split["repeat_pct"], annual_split["new_pct"])):
+            axes[0].text(i, r / 2, f"{r:.0f}%", ha="center", va="center", fontsize=8, color="white", fontweight="bold")
+            axes[0].text(i, r + n / 2, f"{n:.0f}%", ha="center", va="center", fontsize=8, color="black")
+        axes[0].set_title("Tỷ trọng đơn hàng mới vs. quay lại theo năm")
+        axes[0].set_xlabel("Năm")
+        axes[0].set_ylabel("Tỷ trọng (%)")
+        axes[0].set_ylim(0, 105)
+        axes[0].legend()
+
+        sns.heatmap(
+            ret_df,
+            annot=True,
+            fmt=".1f",
+            cmap="YlOrRd_r",
+            linewidths=0.4,
+            ax=axes[1],
+            cbar_kws={"label": "% giữ chân"},
+        )
+        axes[1].set_title("Heatmap retention theo cohort năm (%)")
+        axes[1].set_xlabel("Thời điểm sau lần mua đầu")
+        axes[1].set_ylabel("Năm cohort (năm mua đầu tiên)")
+
+        plt.tight_layout()
+        plt.show()
+
+        repeat_rate = orders.groupby("customer_id")["order_id"].count().gt(1).mean() * 100
+        print(f"Tỷ lệ mua lại (khách đặt > 1 đơn): {repeat_rate:.1f}%")
+        print(f"Khách đang trong vùng im lặng 60-90 ngày ở cuối dữ liệu: {lapsed_60_90:,}")
+        print(f"Cohort 2013 giữ chân ở M+12: {ret_df.loc[2013, 'M+12']:.1f}%")
+        print(f"Cohort 2020 giữ chân ở M+12: {ret_df.loc[2020, 'M+12']:.1f}%")
+        print()
+        print("Retention trung bình theo offset (%)")
+        print(ret_df.mean().round(1).to_string())
+        """
+    ),
+    md_cell(
+        """
+        **Diễn giải**
+
+        - Gần như toàn bộ đơn hàng sau 2015 đến từ khách quay lại: doanh nghiệp đã xây dựng được base khách quen.
+        - Nhưng retention cohort suy giảm rất rõ: M+12 của cohort 2013 là 8.1%, trong khi cohort 2020 chỉ còn 0.3%.
+        - Tỷ lệ M+1 và M+12 gần nhau với từng cohort cho thấy ai mua lại thì thường mua sớm trong năm đầu, không có tích lũy trung thành dần dần.
+
+        **Hàm ý kinh doanh**
+
+        - Đây là dấu hiệu mua theo mùa / sự kiện nhiều hơn churn kiểu subscription, nhưng xu hướng cohort mới yếu dần vẫn cần điều tra.
+        - Nhóm khách im lặng 60-90 ngày là tập có thể kích hoạt lại ngay bằng CRM hoặc re-engagement campaign, đặc biệt với Streetwear.
+        """
+    ),
+    md_cell(
+        """
+        ## 7. Lớp khuyến nghị: danh sách hành động đã được lượng hóa
 
         Đây là phần giúp nâng bài lên mức **khuyến nghị hành động** trong rubric: mỗi việc làm đều có lý do, KPI và mức độ ưu tiên tương đối.
         """
@@ -652,13 +773,179 @@ cells = [
     ),
     md_cell(
         """
+        ## 8. Phân rã biên lợi nhuận gộp theo danh mục
+
+        Doanh thu → trừ COGS → trừ Giảm giá → trừ Hoàn tiền → Lợi nhuận gộp thực.
+
+        Phần này cho thấy lợi nhuận thực sự của từng danh mục, không chỉ doanh thu bề mặt.
+        *(Margin waterfall: Revenue → −COGS → −Discounts → −Refunds → Gross Profit)*
+        """
+    ),
+    code_cell(
+        """
+        active = items[items["order_status"] != "cancelled"].copy()
+        active["total_cogs_line"] = active["cogs"] * active["quantity"]
+
+        cat_rev = active.groupby("category").agg(
+            revenue=("revenue", "sum"),
+            total_cogs=("total_cogs_line", "sum"),
+            total_discounts=("discount_amount", "sum"),
+        ).reset_index()
+
+        cat_refunds = returns_enriched.groupby("category")["refund_amount"].sum().rename("total_refunds").reset_index()
+        cat_pnl = cat_rev.merge(cat_refunds, on="category", how="left").fillna({"total_refunds": 0})
+        cat_pnl["gross_profit"] = cat_pnl["revenue"] - cat_pnl["total_cogs"] - cat_pnl["total_discounts"] - cat_pnl["total_refunds"]
+        cat_pnl["gp_margin_pct"] = cat_pnl["gross_profit"] / cat_pnl["revenue"] * 100
+        cat_pnl = cat_pnl.sort_values("revenue", ascending=False).reset_index(drop=True)
+
+        STEPS = ["Doanh thu", "COGS", "Giảm giá", "Hoàn tiền", "Lợi nhuận GP"]
+        COLORS_WF = {"Doanh thu": "#2a9d8f", "COGS": "#e76f51", "Giảm giá": "#f4a261",
+                     "Hoàn tiền": "#e9c46a", "Lợi nhuận GP": "#264653"}
+        M = 1e6
+
+        fig, axes = plt.subplots(1, len(cat_pnl), figsize=(3.8 * len(cat_pnl), 5), sharey=False)
+        if len(cat_pnl) == 1:
+            axes = [axes]
+
+        for ax, (_, row) in zip(axes, cat_pnl.iterrows()):
+            vals = [row["revenue"], -row["total_cogs"], -row["total_discounts"],
+                    -row["total_refunds"], row["gross_profit"]]
+            running = 0
+            for i, (label, val) in enumerate(zip(STEPS, vals)):
+                if label == "Doanh thu":
+                    ax.bar(label, val / M, color=COLORS_WF[label], edgecolor="white")
+                    running = val / M
+                elif label == "Lợi nhuận GP":
+                    ax.bar(label, val / M, color=COLORS_WF[label], edgecolor="white")
+                else:
+                    ax.bar(label, val / M, bottom=running, color=COLORS_WF[label], edgecolor="white")
+                    running += val / M
+                y_pos = running if label != "Lợi nhuận GP" else val / M
+                ax.text(i, y_pos + 0.5, f"{abs(val)/M:.0f}M", ha="center", va="bottom", fontsize=7.5)
+            ax.axhline(0, color="black", lw=0.5)
+            ax.set_title(f"{row['category']} | Biên GP: {row['gp_margin_pct']:.1f}%", fontsize=9)
+            ax.set_ylabel("VND (triệu)" if ax == axes[0] else "")
+            ax.tick_params(axis="x", rotation=45, labelsize=8)
+
+        fig.suptitle("Phân rã biên lợi nhuận gộp theo danh mục: Doanh thu → COGS → Giảm giá → Hoàn tiền → GP", fontsize=11, y=1.02)
+        plt.tight_layout()
+        plt.show()
+        print(cat_pnl[["category", "revenue", "gross_profit", "gp_margin_pct"]].to_string(index=False))
+        """
+    ),
+    md_cell(
+        """
+        **Diễn giải**
+
+        - Danh mục có `gp_margin_pct` thấp hoặc âm sau khi trừ giảm giá và hoàn tiền là điểm cần can thiệp ngay — doanh thu cao nhưng lợi nhuận thực thấp.
+        - Streetwear chiếm tỷ trọng hoàn tiền lớn nhất, kéo GP margin xuống so với con số gross ban đầu.
+
+        **Hàm ý kinh doanh**
+
+        - Chỉ đẩy ngân sách marketing vào danh mục có GP margin dương và ổn định.
+        - Với danh mục GP margin âm, rà soát lại chính sách khuyến mãi và quy trình trả hàng trước khi tăng doanh thu thêm.
+        """
+    ),
+    md_cell(
+        """
+        ## 9. Chất lượng kênh thu hút: kênh nào mang khách có giá trị cao?
+
+        AOV, tỷ lệ huỷ đơn và tỷ lệ mua lại theo kênh đặt hàng × loại thiết bị.
+
+        Chỉ ra kênh nào đang mang khách chất lượng cao, ma sát thấp.
+        *(Channel + device quality: AOV, cancel rate, repeat-purchase rate)*
+        """
+    ),
+    code_cell(
+        """
+        payments = pd.read_csv(DATA / "payments.csv")
+
+        op = orders.merge(payments[["order_id", "payment_value"]], on="order_id", how="left")
+
+        channel_metrics = (
+            op.groupby(["order_source", "device_type"])
+            .agg(
+                n_orders=("order_id", "count"),
+                cancel_rate=("order_status", lambda x: (x == "cancelled").mean() * 100),
+                aov=("payment_value", "mean"),
+            )
+            .reset_index()
+        )
+
+        repeat_df = (
+            orders.groupby(["order_source", "device_type", "customer_id"])["order_id"]
+            .count()
+            .reset_index(name="n_orders_cust")
+        )
+        repeat_df["is_repeat"] = repeat_df["n_orders_cust"] > 1
+        repeat_rate = (
+            repeat_df.groupby(["order_source", "device_type"])["is_repeat"]
+            .mean()
+            .mul(100)
+            .reset_index(name="repeat_rate")
+        )
+        channel_metrics = channel_metrics.merge(repeat_rate, on=["order_source", "device_type"], how="left")
+        channel_metrics = channel_metrics[channel_metrics["n_orders"] >= 500].copy()
+        channel_metrics["label"] = channel_metrics["order_source"] + " / " + channel_metrics["device_type"]
+        channel_metrics = channel_metrics.sort_values("n_orders", ascending=False).reset_index(drop=True)
+
+        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        x = np.arange(len(channel_metrics))
+        width = 0.6
+
+        axes[0].bar(x, channel_metrics["aov"], color="#2a9d8f", width=width)
+        axes[0].set_title("Giá trị đơn hàng trung bình (AOV) theo kênh")
+        axes[0].set_ylabel("Giá trị đơn hàng TB (VND)")
+        axes[0].set_xticks(x)
+        axes[0].set_xticklabels(channel_metrics["label"], rotation=40, ha="right", fontsize=8)
+        axes[0].yaxis.set_major_formatter(MILLION_FMT)
+
+        axes[1].bar(x, channel_metrics["cancel_rate"], color="#e76f51", width=width)
+        axes[1].set_title("Tỷ lệ huỷ đơn theo kênh (%)")
+        axes[1].set_ylabel("Tỷ lệ huỷ (%)")
+        axes[1].set_xticks(x)
+        axes[1].set_xticklabels(channel_metrics["label"], rotation=40, ha="right", fontsize=8)
+
+        axes[2].bar(x, channel_metrics["repeat_rate"], color="#74c0fc", width=width)
+        axes[2].set_title("Tỷ lệ khách mua lại theo kênh (%)")
+        axes[2].set_ylabel("Tỷ lệ mua lại (%)")
+        axes[2].set_xticks(x)
+        axes[2].set_xticklabels(channel_metrics["label"], rotation=40, ha="right", fontsize=8)
+
+        plt.suptitle("Chất lượng kênh thu hút: kênh nào mang khách có giá trị cao và ma sát thấp?", fontsize=11)
+        plt.tight_layout()
+        plt.show()
+        print(channel_metrics[["order_source", "device_type", "n_orders", "aov", "cancel_rate", "repeat_rate"]].to_string(index=False))
+        """
+    ),
+    md_cell(
+        """
+        **Diễn giải**
+
+        - Kênh có AOV cao + tỷ lệ huỷ thấp + repeat rate cao = khách chất lượng, ưu tiên giữ chân.
+        - Kênh có lượng đơn lớn nhưng tỷ lệ huỷ cao = rà soát UX hoặc cơ chế cam kết trước khi đẩy thêm ngân sách.
+
+        **Hàm ý kinh doanh**
+
+        - Phân bổ lại ngân sách thu hút về kênh có giá trị vòng đời khách hàng cao nhất, không chỉ theo lượng đơn.
+        - Với kênh repeat rate thấp, kiểm tra lý do không quay lại: giá, dịch vụ, hay chất lượng sản phẩm.
+        """
+    ),
+    md_cell(
+        """
         ## Ghi chú cuối
 
-        Cách dùng notebook này trong report:
-
-        - Lấy `1-2` biểu đồ từ phần Nhu cầu / Chuyển đổi để chứng minh bạn có cả tư duy mô tả và tư duy dự báo.
-        - Lấy `1-2` biểu đồ từ phần Khuyến mãi / Ma sát thương mại / Danh mục sản phẩm để thể hiện chiều sâu chẩn đoán và khuyến nghị.
-        - Kết nối trực tiếp các phát hiện này với phần dự báo: mùa vụ, mức độ tập trung danh mục và ma sát vận hành giải thích vì sao mô hình cần kiểm định nghiêm ngặt và khả năng giải thích.
+        | Phần trong notebook | Vị trí trong report | Vì sao |
+        | --- | --- | --- |
+        | 1. Nền cầu cơ bản | Mục 3.1 + Hình 1 | Mở story bằng regime shift sau 2018 và seasonality |
+        | 2. Số đơn & chuyển đổi | Mục 3.2 (text-only) | Chốt rằng orders/conversion quan trọng hơn sessions |
+        | 3. Kinh tế học khuyến mãi | Mục 3.4 + Hình 3 | Insight prescriptive rõ nhất về biên lợi nhuận |
+        | 4. COD & trả hàng | Mục 3.5 + Hình 4 | Chỉ ra điểm rò rỉ doanh thu rõ nhất |
+        | 5. Danh mục & tồn kho | Mục 3.6 + Hình 5 | Nối quy mô doanh thu với rủi ro vận hành |
+        | 6. Retention khách hàng | Mục 3.3 + Hình 2 | Cho thấy cohort mới yếu hơn và mở ra re-engagement |
+        | 7. Lớp khuyến nghị | Mục 3.8 + Bảng 1 | Chốt thứ tự ưu tiên và KPI |
+        | 8. Phân rã biên lợi nhuận gộp | Hình 4 (panel phải) + Hình 6 (panel trên) | Chuyển doanh thu bề mặt thành biên GP thực để tránh quyết định theo top-line |
+        | 9. Chất lượng kênh thu hút | Mục 3.7 + Hình 6 (panel dưới) | Chốt quyết định phân bổ ngân sách theo AOV và tỷ lệ huỷ |
         """
     ),
 ]
@@ -680,5 +967,5 @@ nb = {
     "nbformat_minor": 5,
 }
 
-(ROOT / "eda_round1.ipynb").write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
-print("Wrote eda_round1.ipynb")
+OUT.write_text(json.dumps(nb, ensure_ascii=False, indent=1), encoding="utf-8")
+print(f"Wrote analytics notebook to {OUT}")

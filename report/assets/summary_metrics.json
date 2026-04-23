@@ -19,5 +19,17 @@
   "weekday_best": "Wednesday",
   "weekday_worst": "Saturday",
   "peak_month": 4,
-  "trough_month": 12
+  "trough_month": 12,
+  "aov_vnd": 25397.022290194684,
+  "units_per_order": 4.966640131695894,
+  "promo_penetration_pct": 38.663493169565214,
+  "repeat_purchase_rate_pct": 75.22549475877047,
+  "return_rate_order_pct": 6.97907554633493,
+  "cancel_rate_pct": 9.191198633577816,
+  "best_channel_aov_name": "direct",
+  "best_channel_aov_vnd": 25505.432421705067,
+  "best_channel_cancel_name": "paid_search",
+  "best_channel_cancel_pct": 9.101883489114167,
+  "worst_channel_cancel_name": "referral",
+  "worst_channel_cancel_pct": 9.336327731743205
 }
