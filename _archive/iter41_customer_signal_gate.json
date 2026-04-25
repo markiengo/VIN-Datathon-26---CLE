@@ -1,0 +1,10 @@
+{
+  "staged": [
+    "submission_iter41_customer_resid02.csv",
+    "submission_iter41_customer_resid04.csv",
+    "submission_iter41_customer_resid06.csv",
+    "submission_iter41_customer_resid08.csv"
+  ],
+  "recommended_strength": 0.06,
+  "submit_first": "submission_iter41_customer_resid06.csv"
+}

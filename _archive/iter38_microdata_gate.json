@@ -1,0 +1,40 @@
+{
+  "decisions": [
+    {
+      "weight": 0.05,
+      "wins_or_near_ties": 3,
+      "max_regress_pct": -0.0025112609568909,
+      "avg_delta": -1803.516501335563,
+      "pass": true
+    },
+    {
+      "weight": 0.1,
+      "wins_or_near_ties": 3,
+      "max_regress_pct": -0.004747577673484579,
+      "avg_delta": -3242.8306709399526,
+      "pass": true
+    },
+    {
+      "weight": 0.2,
+      "wins_or_near_ties": 3,
+      "max_regress_pct": -0.007836116968289052,
+      "avg_delta": -5206.516308466438,
+      "pass": true
+    },
+    {
+      "weight": 0.35,
+      "wins_or_near_ties": 3,
+      "max_regress_pct": -0.0035690498550121547,
+      "avg_delta": -5561.259102394921,
+      "pass": true
+    }
+  ],
+  "selected": {
+    "weight": 0.1,
+    "wins_or_near_ties": 3,
+    "max_regress_pct": -0.004747577673484579,
+    "avg_delta": -3242.8306709399526,
+    "pass": true
+  },
+  "gate_pass": true
+}

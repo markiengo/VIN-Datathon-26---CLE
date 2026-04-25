@@ -23,6 +23,9 @@ Ghi chú: đề gốc vẫn dùng cách gọi `sales_train.csv` / `sales_test.cs
 | 3 | [`deliverables/mcq_answers.md`](./deliverables/mcq_answers.md) | đáp án Part 1 theo đề cập nhật |
 | 4 | [`notebooks/part2_analytics.ipynb`](./notebooks/part2_analytics.ipynb) | notebook chuẩn cho Part 2, là nguồn của các section analytics trong report |
 | 5 | [`notebooks/part3_forecasting.ipynb`](./notebooks/part3_forecasting.ipynb) | pipeline Part 3: feature engineering, CV theo thời gian, SHAP, submission |
+| 6 | [`MODEL_CARD.md`](./MODEL_CARD.md) | thẻ mô hình: iter-39 (submission) vs LightGBM two-stage trong Part 3, không pseudo-label |
+| 7 | [`docs/MODEL_RESEARCH_RETROSPECTIVE.md`](./docs/MODEL_RESEARCH_RETROSPECTIVE.md) | toàn bộ thí nghiệm đã chạy, hạn chế model, hướng cải tiến cho team |
+| 8 | [`docs/LITERATURE_ML_INSIGHTS.md`](./docs/LITERATURE_ML_INSIGHTS.md) | insight từ paper (ML) + references để chèn report |
 
 ---
 

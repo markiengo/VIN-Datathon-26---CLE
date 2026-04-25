@@ -1,0 +1,33 @@
+{
+  "decisions": [
+    {
+      "weight": 0.02,
+      "wins": 0,
+      "max_regress_pct": 0.0001386332321104356,
+      "avg_delta": 34.71891375957057,
+      "pass": false
+    },
+    {
+      "weight": 0.03,
+      "wins": 0,
+      "max_regress_pct": 0.0002079498481656534,
+      "avg_delta": 52.23469275759999,
+      "pass": false
+    },
+    {
+      "weight": 0.05,
+      "wins": 0,
+      "max_regress_pct": 0.00034817911527361926,
+      "avg_delta": 88.12817513391686,
+      "pass": false
+    }
+  ],
+  "selected": {
+    "weight": 0.02,
+    "wins": 0,
+    "max_regress_pct": 0.0001386332321104356,
+    "avg_delta": 34.71891375957057,
+    "pass": false
+  },
+  "gate_pass": false
+}

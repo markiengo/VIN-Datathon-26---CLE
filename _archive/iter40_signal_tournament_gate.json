@@ -1,0 +1,18 @@
+{
+  "top_candidates": [
+    "submission_iter40_product_mix_resid08.csv",
+    "submission_iter40_product_mix_resid06.csv",
+    "submission_iter40_product_mix_resid04.csv"
+  ],
+  "best": [
+    {
+      "group": "product_mix",
+      "strength": 0.08,
+      "wins": 2,
+      "avg_delta": -1102.3230924502714,
+      "max_regress_pct": 0.0008437552328120137,
+      "pass": true
+    }
+  ],
+  "submit_first": "submission_iter40_product_mix_resid08.csv"
+}

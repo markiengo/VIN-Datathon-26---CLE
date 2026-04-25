@@ -1,0 +1,16 @@
+{
+  "submit_first": "submission_iter42_payments_resid06.csv",
+  "chosen": {
+    "group": "payments",
+    "strength": 0.06,
+    "wins": 3,
+    "avg_delta": -256.2515484816395,
+    "max_regress_pct": -5.271433440400332e-05,
+    "pass": true,
+    "proj_corr": 0.8683023467558338,
+    "proj_nmae": 0.5538123643988971,
+    "calibrated_pass": true,
+    "strength_rank": 0,
+    "group_rank": 0
+  }
+}

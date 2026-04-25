@@ -1,16 +1,78 @@
+# =============================================================================
+# Vin Datathon — .gitignore cho publish GitHub (gọn, đúng bài nộp)
+# =============================================================================
+# - Giữ: README, notebooks, scripts, dataset, deliverables/submission.csv,
+#   _archive/ (gate JSON + iter_scripts), report.
+# - Không đẩy: mật khẩu Kaggle, thư mục Cursor/Claude cá nhân, CSV thí nghiệm
+#   trùng submission trong _archive/staged_submissions/, nhật ký iter & runner cục bộ.
+# Nếu đã từng commit các file trong _archive/staged_submissions/, bỏ track:
+#   git rm -r --cached _archive/staged_submissions/
+# =============================================================================
+
+# --- Bí mật & tài khoản (tuyệt đối không push) ---
+_kaggle_accounts.json
+kaggle.json
+**/kaggle.json
+.env
+.env.*
+*.pem
+*secret*
+*credentials*
+
+# --- Công cụ AI / IDE cục bộ (không thuộc bài thi) ---
 .claude/
+.local_tools/
+.cursor/
 CLAUDE.md
 
+# --- Nhật ký / runner cục bộ (không push GitHub — có thể chứa quota, lệnh nộp) ---
+_iter_log.md
+_loop_runner.py
+_iter*_patch.py
+
+# --- Thư mục submission thử — trùng với deliverables; chỉ giữ bản nộp chính thức ---
+_archive/staged_submissions/
+
+# --- Python ---
 __pycache__/
 *.py[cod]
-.ipynb_checkpoints/
+*$py.class
+.Python
+*.so
 .venv/
 venv/
 env/
+ENV/
 .mypy_cache/
 .pytest_cache/
 .ruff_cache/
+*.egg-info/
+.eggs/
+dist/
+build/
+pip-wheel-metadata/
 
+# --- Jupyter ---
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# --- Dữ liệu / model dump lớn (nếu sau này có) ---
+*.pkl
+*.pickle
+*.joblib
+*.parquet
+*.feather
+*.h5
+*.pt
+*.pth
+*.onnx
+*.cbm
+catboost_info/
+
+# --- Node (nếu thêm frontend) ---
+node_modules/
+
+# --- LaTeX phụ (build artifacts) ---
 *.aux
 *.bbl
 *.blg
@@ -20,7 +82,16 @@ env/
 *.out
 *.synctex.gz
 
-*.bak
-*.tmp
+# --- Hệ điều hành & tạm ---
 .DS_Store
 Thumbs.db
+Desktop.ini
+*.bak
+*.tmp
+*.swp
+*~
+
+# --- Tải / nén tạm ---
+*.zip
+*.tar.gz
+*.7z

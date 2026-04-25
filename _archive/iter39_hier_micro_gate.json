@@ -1,0 +1,47 @@
+{
+  "decisions": [
+    {
+      "weight": 0.03,
+      "wins": 3,
+      "max_regress_pct": -0.0015908990305082082,
+      "avg_delta": -1072.3931012648197,
+      "pass": true
+    },
+    {
+      "weight": 0.05,
+      "wins": 3,
+      "max_regress_pct": -0.0025902494581398613,
+      "avg_delta": -1718.2580251071292,
+      "pass": true
+    },
+    {
+      "weight": 0.08,
+      "wins": 3,
+      "max_regress_pct": -0.00394858453464841,
+      "avg_delta": -2527.978510489707,
+      "pass": true
+    },
+    {
+      "weight": 0.1,
+      "wins": 3,
+      "max_regress_pct": -0.004761570458471036,
+      "avg_delta": -2991.515198438021,
+      "pass": true
+    },
+    {
+      "weight": 0.12,
+      "wins": 3,
+      "max_regress_pct": -0.005114609800768835,
+      "avg_delta": -3403.1314444406503,
+      "pass": true
+    }
+  ],
+  "selected": {
+    "weight": 0.08,
+    "wins": 3,
+    "max_regress_pct": -0.00394858453464841,
+    "avg_delta": -2527.978510489707,
+    "pass": true
+  },
+  "gate_pass": true
+}

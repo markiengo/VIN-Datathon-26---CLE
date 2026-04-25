@@ -1,0 +1,41 @@
+{
+  "pure_avg_delta": 27261.425643427745,
+  "decisions": [
+    {
+      "weight": 0.03,
+      "wins": 3,
+      "avg_delta": -1220.8359857810622,
+      "max_regress_pct": -0.0021118175790808026,
+      "pass": true
+    },
+    {
+      "weight": 0.05,
+      "wins": 3,
+      "avg_delta": -1953.8136172773666,
+      "max_regress_pct": -0.0033288845259332616,
+      "pass": true
+    },
+    {
+      "weight": 0.08,
+      "wins": 3,
+      "avg_delta": -2927.4648065733877,
+      "max_regress_pct": -0.004997874505608346,
+      "pass": true
+    },
+    {
+      "weight": 0.1,
+      "wins": 3,
+      "avg_delta": -3509.3654010986015,
+      "max_regress_pct": -0.00602483922684667,
+      "pass": true
+    }
+  ],
+  "selected": {
+    "weight": 0.05,
+    "wins": 3,
+    "avg_delta": -1953.8136172773666,
+    "max_regress_pct": -0.0033288845259332616,
+    "pass": true
+  },
+  "gate_pass": true
+}
