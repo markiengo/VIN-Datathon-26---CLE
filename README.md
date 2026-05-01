@@ -21,11 +21,11 @@ Ghi chú: đề gốc vẫn dùng cách gọi `sales_train.csv` / `sales_test.cs
 | 1 | [`deliverables/round1_report.pdf`](./deliverables/round1_report.pdf) | toàn bộ phân tích, kết quả, methodology trong 4 trang nội dung chính |
 | 2 | [`deliverables/submission.csv`](./deliverables/submission.csv) | file nộp Kaggle, 548 dòng, giữ đúng thứ tự `sample_submission.csv` |
 | 3 | [`deliverables/mcq_answers.md`](./deliverables/mcq_answers.md) | đáp án Part 1 theo đề cập nhật |
-| 4 | [`notebooks/part2_analytics.ipynb`](./notebooks/part2_analytics.ipynb) | notebook chuẩn cho Part 2, là nguồn của các section analytics trong report |
-| 5 | [`notebooks/part3_forecasting.ipynb`](./notebooks/part3_forecasting.ipynb) | pipeline Part 3: feature engineering, CV theo thời gian, SHAP, submission |
+| 4 | [`part2/part2_analytics.ipynb`](./part2/part2_analytics.ipynb) | notebook chuẩn cho Part 2, là nguồn của các section analytics trong report |
+| 5 | [`part3/notebooks/part3_forecasting.ipynb`](./part3/notebooks/part3_forecasting.ipynb) | pipeline Part 3: feature engineering, CV theo thời gian, SHAP, submission |
 | 6 | [`MODEL_CARD.md`](./MODEL_CARD.md) | thẻ mô hình: iter-39 (submission) vs LightGBM two-stage trong Part 3, không pseudo-label |
-| 7 | [`docs/MODEL_RESEARCH_RETROSPECTIVE.md`](./docs/MODEL_RESEARCH_RETROSPECTIVE.md) | toàn bộ thí nghiệm đã chạy, hạn chế model, hướng cải tiến cho team |
-| 8 | [`docs/LITERATURE_ML_INSIGHTS.md`](./docs/LITERATURE_ML_INSIGHTS.md) | insight từ paper (ML) + references để chèn report |
+| 7 | [`part3/docs/MODEL_RESEARCH_RETROSPECTIVE.md`](./part3/docs/MODEL_RESEARCH_RETROSPECTIVE.md) | toàn bộ thí nghiệm đã chạy, hạn chế model, hướng cải tiến cho team |
+| 8 | [`part3/docs/LITERATURE_ML_INSIGHTS.md`](./part3/docs/LITERATURE_ML_INSIGHTS.md) | insight từ paper (ML) + references để chèn report |
 
 ---
 
@@ -44,17 +44,35 @@ Ghi chú: đề gốc vẫn dùng cách gọi `sales_train.csv` / `sales_test.cs
 │   ├── sample_submission.csv       # template submission — 548 dòng, 2023-01-01 → 2024-07-01
 │   └── *.csv                       # orders, products, customers, payments, ...
 │
-├── deliverables/                   # artifacts nộp bài
+├── deliverables/                   # artifacts nộp bài (KHÔNG chỉnh sửa)
 │   ├── round1_report.pdf
-│   ├── submission.csv
+│   ├── submission.csv              # official submission — iter-39, MAE 680,344
 │   └── mcq_answers.md
 │
-├── notebooks/
+├── part1/                          # MCQ + Data Validation
+│   ├── README.md
 │   ├── part1_mcq.ipynb
-│   ├── part1_data_validation.ipynb
+│   └── part1_data_validation.ipynb
+│
+├── part2/                          # Analytics
+│   ├── README.md
 │   ├── part2_analytics.ipynb
-│   ├── part3_baseline.ipynb
-│   └── part3_forecasting.ipynb
+│   └── build_part2_analytics_notebook.py
+│
+├── part3/                          # Forecasting
+│   ├── README.md
+│   ├── notebooks/
+│   │   └── part3_forecasting.ipynb          # from-scratch LGB (~935K)
+│   ├── scripts/
+│   │   └── produce_final_submission.py      # Châu friend file + Tan COGS correction (673K)
+│   ├── submissions/
+│   │   ├── submission_iter50_blend05.csv    # Châu iter-50 (680,854)
+│   │   ├── submission_friend_cogs_only.csv  # experimental best (673,555)
+│   │   └── _archive/                        # gate JSON files iter 38–46
+│   └── docs/
+│       ├── MODEL_RESEARCH_RETROSPECTIVE.md
+│       ├── LITERATURE_ML_INSIGHTS.md
+│       └── _gap_report.md
 │
 ├── report/
 │   ├── round1_report.tex           # LaTeX source
@@ -63,15 +81,14 @@ Ghi chú: đề gốc vẫn dùng cách gọi `sales_train.csv` / `sales_test.cs
 │   └── assets/                     # figures + summary_metrics.json do script generate
 │
 ├── references/
-│   ├── đề.md                       # bản markdown đồng bộ từ đề PDF + CSV phát hành
-│   ├── đề_og_btc.pdf               # đề cập nhật
+│   ├── đề.md
+│   ├── đề_og_btc.pdf
 │   └── schemas/
 │       ├── ddl_simple.sql
 │       └── ERD_simple.png
 │
 └── scripts/
-    ├── build_part2_analytics_notebook.py
-    └── build_report_assets.py
+    └── build_report_assets.py      # generates report/assets/ figures
 ```
 
 ---
@@ -87,8 +104,8 @@ pip install -r requirements.txt
 **Build lại analytics notebook**
 
 ```bash
-python scripts/build_part2_analytics_notebook.py --overwrite
-# -> notebooks/part2_analytics.ipynb
+python part2/build_part2_analytics_notebook.py --overwrite
+# -> part2/part2_analytics.ipynb
 ```
 
 **Build lại figures và metric cho report**

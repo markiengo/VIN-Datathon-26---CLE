@@ -1,5 +1,32 @@
 # changelog
 
+## delta 2026-05-01
+
+### restructure: part1/part2/part3 subfolders + COGS correction experiment
+
+- moved notebooks into part-specific subfolders:
+  - `notebooks/part1_mcq.ipynb` → `part1/`
+  - `notebooks/part1_data_validation.ipynb` → `part1/`
+  - `notebooks/part2_analytics.ipynb` → `part2/`
+  - `notebooks/part3_forecasting.ipynb` → `part3/notebooks/`
+- moved scripts into part-specific subfolders:
+  - `scripts/build_part2_analytics_notebook.py` → `part2/`
+- moved docs into part3:
+  - `docs/MODEL_RESEARCH_RETROSPECTIVE.md` → `part3/docs/`
+  - `docs/LITERATURE_ML_INSIGHTS.md` → `part3/docs/`
+  - `_gap_report.md` → `part3/docs/`
+- moved gate JSONs from `_archive/` → `part3/submissions/_archive/`
+- deleted un-finalized files: `_archive/iter_scripts/` (iter-49/50/51), `baseline.ipynb`, `notebooks/part3_baseline.ipynb`, `_staged/`
+- added Tan's COGS correction experiment (`part3/scripts/produce_final_submission.py`)
+- added input + output CSVs for the experiment:
+  - `part3/submissions/submission_iter50_blend05.csv` (Châu iter-50, MAE 680,854)
+  - `part3/submissions/submission_friend_cogs_only.csv` (Tan COGS correction, MAE 673,555)
+- fixed `part3/notebooks/part3_forecasting.ipynb` path detection to work from any cwd depth
+- added `part1/README.md`, `part2/README.md`, `part3/README.md`
+- updated `README.md`, `MODEL_CARD.md` to reflect new structure
+
+---
+
 ## mốc so sánh
 
 - so với repo gốc: `https://github.com/chaulemuoichin/VIN-Datathon-26---CLE`

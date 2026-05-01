@@ -3,7 +3,7 @@
 Tài liệu này mô tả **hai tầng** mô hình liên quan bài thi:
 
 1. **Submission đang nộp** (`deliverables/submission.csv`) — tương đương **iter-39** (hierarchical microdata ensemble, nhánh *old/new 50*). Đây là artifact **mạnh nhất theo public leaderboard** đã ghi trong nhật ký phiên thi.
-2. **Pipeline LightGBM được mô tả đầy đủ trong code** — `notebooks/part3_forecasting.ipynb`, nhánh **two-stage + multi-quantile-α** (trong notebook được gắn nhãn tiến hoá **iter-10**). Đây là nơi **có thể tái chạy từng dòng** và trích tham số chính xác.
+2. **Pipeline LightGBM được mô tả đầy đủ trong code** — `part3/notebooks/part3_forecasting.ipynb`, nhánh **two-stage + multi-quantile-α** (trong notebook được gắn nhãn tiến hoá **iter-10**). Đây là nơi **có thể tái chạy từng dòng** và trích tham số chính xác.
 
 ---
 
@@ -126,10 +126,22 @@ Trong repo **không có** vòng lặp pseudo-labeling (train → dự báo test 
 
 ## Tóm tắt cho ban tổ chức
 
-| Câu hỏi | Iter-39 (submission) | Part 3 notebook (LGB) |
-|---------|-------------------------|------------------------|
-| Code đầy đủ trong repo? | Không — chỉ artifact + mô tả | Có — `part3_forecasting.ipynb` |
-| Pseudo-labeling? | Không mô tả | **Không có** |
-| COGS | Ensemble micro + anchor | Two-stage + multi-α + seasonal blend |
+| Câu hỏi | Iter-39 (submission) | Part 3 notebook (LGB) | COGS correction experiment |
+|---------|-------------------------|------------------------|---------------------------|
+| Code đầy đủ trong repo? | Không — chỉ artifact + mô tả | Có — `part3/notebooks/part3_forecasting.ipynb` | Có — `part3/scripts/produce_final_submission.py` |
+| Pseudo-labeling? | Không mô tả | **Không có** | Không — post-processing thuần tuý |
+| COGS | Ensemble micro + anchor | Two-stage + multi-α + seasonal blend | 60% historical ratio + 40% friend ratio |
+| Kaggle MAE | **680,344** (official) | ~935,000 | **673,555** (experimental) |
 
 **Khuyến nghị:** phần methodology trong PDF báo cáo nên **phân tách rõ** đoạn “LightGBM tabular two-stage (reproducible trong notebook)” và đoạn “ensemble iter-39 (artifact cuối)” để tránh hiểu nhầm một pipeline duy nhất.
+
+---
+
+## COGS correction experiment (Tan's contribution)
+
+`part3/scripts/produce_final_submission.py` áp dụng COGS correction của Tan lên iter-50 pseudo-labeled file:
+
+- **Input:** `part3/submissions/submission_iter50_blend05.csv` (Châu iter-50, 680,854 MAE)
+- **Method:** Tính tỉ lệ COGS/Revenue lịch sử từ `dataset/sales.csv` (2018–2022), theo `(month, odd_year)`. Blend 60% historical ratio + 40% Châu's per-day ratio. August odd-year cap 0.99.
+- **Output:** `part3/submissions/submission_friend_cogs_only.csv` (673,555 MAE)
+- **Reproducible:** Có — deterministic, không random state. Output byte-identical khi chạy lại.
